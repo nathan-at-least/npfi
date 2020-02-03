@@ -1,17 +1,11 @@
-mod bitwidth;
 mod conversionoverflow;
+mod traits;
 
-pub use crate::bitwidth::BitWidth;
 pub use crate::conversionoverflow::ConversionOverflow;
+pub use crate::traits::bitwidth::BitWidth;
 
 #[macro_use]
-mod unsigned;
-
-#[macro_use]
-mod prim;
-
-#[macro_use]
-mod relations;
+mod macros;
 
 include!(concat!(env!("OUT_DIR"), "/macrocalls.rs"));
 
