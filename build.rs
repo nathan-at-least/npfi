@@ -8,17 +8,28 @@ fn main() -> io::Result<()> {
 
     let out_dir = env::var_os("OUT_DIR").unwrap();
     let dest_path = Path::new(&out_dir).join("macrocalls.rs");
-    let f = File::open(dest_path);
+    let mut f = File::create(dest_path)?;
     for i in 1..128 {
-        write_macro_calls(&f, i)?;
+        write_macro_calls(&mut f, i)?;
     }
+
+    Ok(())
 }
 
-fn write_macro_calls(f: &File, usersize: usize) -> io::Result<()> {
+fn write_macro_calls(f: &mut File, usersize: usize) -> io::Result<()> {
+    use std::io::Write;
+
     let containersize = container_size_for(usersize);
 
-    f.write(&format!(
-        "define_unsigned!(u{0}, u{1}, {0}, \"Unsigned {0}-bit integer.\");\n",
-        usersize, containersize,
-    ));
+    f.write_all(
+        &format!(
+            "define_unsigned!(u{0}, u{1}, {0}, #[doc=\"Unsigned {0}-bit integer.\"]);\n",
+            usersize, containersize,
+        )
+        .as_bytes(),
+    )
+}
+
+fn container_size_for(_usersize: usize) -> usize {
+    128 // FIXME: choose the smallest primitive type that contains usersize.
 }

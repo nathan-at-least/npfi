@@ -1,3 +1,6 @@
+#[macro_use]
+mod unsigned;
+
 include!(concat!(env!("OUT_DIR"), "/macrocalls.rs"));
 
 #[cfg(test)]
