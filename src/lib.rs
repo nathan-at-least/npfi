@@ -1,3 +1,5 @@
+include!(concat!(env!("OUT_DIR"), "/macrocalls.rs"));
+
 #[cfg(test)]
 mod tests {
     #[test]
