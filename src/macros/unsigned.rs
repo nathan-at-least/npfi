@@ -3,12 +3,13 @@ macro_rules! define_unsigned {
         #[$doc]
         #[allow(non_camel_case_types)]
         #[derive(
-            PartialOrd,
-            PartialEq,
             num_derive::Num,
+            num_derive::NumCast,
             num_derive::NumOps,
             num_derive::One,
             num_derive::Zero,
+            PartialEq,
+            PartialOrd,
         )]
         pub struct $usertype($containertype);
 
@@ -22,7 +23,7 @@ macro_rules! define_unsigned {
             }
         }
 
-        impl crate::BitWidth for $usertype {
+        impl crate::FixedUnsigned for $usertype {
             type PrimitiveContainer = $containertype;
 
             fn bit_width() -> usize {
@@ -31,6 +32,10 @@ macro_rules! define_unsigned {
 
             fn into_primitive(self) -> Self::PrimitiveContainer {
                 self.0
+            }
+
+            fn from_primitive(p: Self::PrimitiveContainer) -> Self {
+                $usertype(p)
             }
         }
     };

@@ -2,7 +2,8 @@ mod conversionoverflow;
 mod traits;
 
 pub use crate::conversionoverflow::ConversionOverflow;
-pub use crate::traits::bitwidth::BitWidth;
+pub use crate::traits::bitsplice::{BitContainerOf, SpliceOutOfBounds, UnspliceOutOfBounds};
+pub use crate::traits::fixedunsigned::FixedUnsigned;
 
 #[macro_use]
 mod macros;

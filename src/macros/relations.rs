@@ -1,8 +1,10 @@
-macro_rules! define_relations {
-    ( bigger newtype $big:ident, smaller newtype $small:ident ) => {
+macro_rules! define_newtype_relations {
+    ( bigger: $big:ident, smaller: $small:ident ) => {
         impl From<$small> for $big {
             fn from(small: $small) -> Self {
-                $big(small.0 as <$big as crate::BitWidth>::PrimitiveContainer)
+                $big::from_primitive(
+                    small.into_primitive() as <$big as crate::FixedUnsigned>::PrimitiveContainer
+                )
             }
         }
 
@@ -11,22 +13,33 @@ macro_rules! define_relations {
 
             fn try_from(big: $big) -> Result<Self, Self::Error> {
                 if big <= $big::from(<$small as num_traits::Bounded>::max_value()) {
-                    Ok($small(
-                        big.0 as <$small as crate::BitWidth>::PrimitiveContainer,
-                    ))
+                    Ok($small::from_primitive(big.into_primitive()
+                        as <$small as crate::FixedUnsigned>::PrimitiveContainer))
                 } else {
                     Err(crate::ConversionOverflow {
-                        target_size: <$small as crate::BitWidth>::bit_width(),
+                        target_size: <$small as crate::FixedUnsigned>::bit_width(),
                         source: big,
                     })
                 }
             }
         }
+
+        define_bitcontainerof_relation!(bigger: $big, smaller: $small);
     };
+}
 
-    ( bigger prim $big:ident, smaller newtype $small:ident ) => {};
+macro_rules! define_bitcontainerof_relation {
+    ( bigger: $big:ident, smaller: $small:ident ) => {
+        impl crate::BitContainerOf<$small> for $big {
+            fn splice_in_bits_without_bounds_check(&mut self, field: $small, offset: usize) {
+                self |= $big::from(field) << offset;
+            }
 
-    ( bigger newtype $big:ident, smaller prim $small:ident ) => {};
-
-    ( bigger prim $big:ident, smaller prim $small:ident ) => {};
+            fn unsplice_bits_without_bounds_check(self, offset: usize) -> $small {
+                let bigval = self >> offset & $big::from($small::max_value());
+                $small::try_from(bigval)
+                    .expect("impossible case: bigval must be small enough for small")
+            }
+        }
+    };
 }

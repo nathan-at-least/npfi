@@ -45,22 +45,21 @@ fn write_newtype_defs(f: &mut File, targetsize: usize, containersize: usize) -> 
 }
 
 fn write_relation_defs(f: &mut File, bigsize: usize, smallsize: usize) -> io::Result<()> {
-    fn keyword(s: usize) -> &'static str {
-        if container_size_for(s) == s {
-            "prim"
-        } else {
-            "newtype"
-        }
-    }
-
     write!(
         f,
-        "define_relations!(bigger {} u{}, smaller {} u{});\n",
-        keyword(bigsize),
+        "{}!(bigger: u{}, smaller: u{});\n",
+        if is_prim_size(bigsize) && is_prim_size(smallsize) {
+            "define_bitcontainerof_relation"
+        } else {
+            "define_newtype_relations"
+        },
         bigsize,
-        keyword(smallsize),
         smallsize,
     )
+}
+
+fn is_prim_size(targetsize: usize) -> bool {
+    container_size_for(targetsize) == targetsize
 }
 
 fn container_size_for(targetsize: usize) -> usize {
